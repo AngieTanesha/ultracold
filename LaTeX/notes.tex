@@ -1,0 +1,1026 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% Ultracold Atoms Lab Notes
+%% Copyright (C) 2017
+%% Department of Physics
+%% The University of Melbourne
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% HEADER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% In general, LaTeX commands start with `\` and consist of letters only.
+%% Optional parameters are specified in brackets `[]`, whilst compulsory
+%% arguments (if any) are specified in braces `{}`.  (Strictly speaking, this is
+%% only a convention and packages can use other things.  One notable example is
+%% the Beamer package which adds extra optional arguments with `<>'.)
+%%
+%% LaTeX is generally insensitive to whitespaces including newlines.  So if a
+%% functions takes a lot of arguments or has many options, it can be easily
+%% split across lines without repercussions.  The one important exception is
+%% that full empty lines mark the end/start of a paragraph.
+
+%% All LaTeX documents begin with the the `\documentclass` command which serves
+%% to set the general style of the document.  It defines the page layout, the
+%% chapter/section styles, how figures appear, etc. and may provide some
+%% additional environments too.  LaTeX comes with four main classes: `article`,
+%% `report`, `book` and `letter`.
+%%
+%% The [KOMA-script](https://www.ctan.org/pkg/koma-script) package provides
+%% alternatives to replacements for the default classes (`scrartcl`, `scrreprt`,
+%% `scrbook`, `scrlttr2`) and provides a lot of options to more easily customize the
+%% layout of the page.
+\documentclass[
+  a4paper,             % The size of the layout
+  11pt,                % The font size (10pt, 11pt, 12pt)
+  oneside,             % Whether the document is one-sided or two-sided
+  onecolumn,           % Whether to have one or two columns in the layout
+  bibliography=totoc,  % Adjust how the bibliography appears in ToC
+  final,               % As opposed to draft (which speeds up compilation)
+]{scrartcl}
+%% Note all of these optional arguments are required; in fact, most of the ones
+%% specified here would have been chosen by default if left unspecified.  There
+%% are also some other options which have not be specified but they are
+%% documented in the [KOMA-script](https://www.ctan.org/pkg/koma-script)
+%% documentation.
+%%
+%% One of the important options in the list above is `draft`/`final`.  If draft
+%% mode is enabled, LaTeX and most packages will disable features which take up
+%% a lot of time in order to speed up compilation.  Draft mode also highlights
+%% certain error in the output document.  On the other hand, final mode enables
+%% all features which will increase (sometimes quite significantly) the
+%% compilation time of the document.
+
+%% The part of the document starting from here through to the `\begin{document}`
+%% command is called the preamble.  This is where you include additional
+%% packages which provide additional functionalities.  Below are many packages
+%% which I use on a semi-regular basis.
+%%
+%% Although you'll find that they are all enabled below, this is for the sake of
+%% checking compatibility between all the packages.  It is advisable to only
+%% enable those packages you actually need as this will speed up compilation,
+%% and decrease the likelihood that two packages conflict.
+%%
+%% All packages are available from the Comprehence TeX Archive Network (CTAN) at
+%% http://ctan.org.  Quite often, for each `\usepackage{pkg-name}`, it is
+%% possible to go to http://ctan.org/pkg/pkg-name in order to find information
+%% about the package (there are a few exception to this though, in which case a
+%% Google search will suffice).
+%%
+%% Although you'll know the reason for including a package initially, most
+%% people will forget this initial reason after a few months.  It is a **VERY**
+%% good idea to have a small comment next to *EVERY* `\usepackage` giving a
+%% quick recap as to what this package does.  This will be invaluable in case
+%% you include two packages which conflict each other.
+
+%% For the vast majority of packages, the order in which they are loaded does
+%% not matter.  There are a few exceptions though, mostly relating to the
+%% various referencing packages (hyperef, cleveref, ...).  The following package
+%% must be loaded first and provides some additional functionalities to other
+%% packages.
+\usepackage{ifluatex}  % Provides the command \ifluatex
+
+%% Formatting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{geometry}   % Customize text width, page height, margins, etc.
+\geometry{
+  %% See the geometry package's documentation for all the options available
+  textwidth=13cm,
+}
+
+\usepackage{pageslts}   % Improved page numbering
+\usepackage{enumitem}   % Easily customize lists
+
+%% Change the formatting of titles and sections.
+\setkomafont{part}{\normalfont\scshape\Huge}
+\setkomafont{partnumber}{\normalfont\scshape\huge}
+\setkomafont{section}{\normalfont\Huge}
+\setkomafont{subsection}{\normalfont\huge}
+\setkomafont{subsubsection}{\normalfont\Large}
+\setkomafont{paragraph}{\normalfont\large\scshape}
+
+%% Change the formatting of section entries in the table of contents
+\setkomafont{sectionentry}{\scshape}
+
+%% Modify the indentation at the start of each paragraph.
+\setlength\parindent{1em}
+\setlength\parskip{0.3\baselineskip plus 0.5\baselineskip minus 0.1\baselineskip}
+
+%% Font
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{microtype}   % Fine small typographical details
+\usepackage{realscripts} % Use the font's sub- and superscripts
+
+%% LaTeX allows for some if-else statements.  It is very rare that you'll have
+%% to use them, though this is one example since we only want to include a
+%% particular package if this example is compiled with LuaLaTeX.
+\ifluatex
+  \usepackage{fontspec}  % Allows for any font to be specified
+
+  % Change the main font
+  \setmainfont{EB Garamond}[
+    Contextuals={Alternate},
+    Ligatures={Common,Contextual,Rare,TeX},
+    Numbers=OldStyle,
+    % CharacterVariant={1},    % historical s
+    % CharacterVariant={3},    % historical j
+    % CharacterVariant={6},    % guillemets
+    % CharacterVariant={11},   % distinguish i and 1
+    % CharacterVariant={21},   % a
+    % CharacterVariant={27},   % g
+    ItalicFeatures={
+      CharacterVariant={4},  % &
+      CharacterVariant={5:3},  % v
+    }
+  ]
+
+  % Change the mono-space font
+  \setmonofont{Fira Code}[
+    Scale=MatchLowercase,
+  ]
+\else
+  \usepackage{ebgaramond}  % A fall-back that isn't as nice as fontspec
+\fi %% marks the end of the if-else statement
+
+\usepackage[cmintegrals,varg]{newtxmath}  % Nice math font with Garamond
+
+%% Languages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[UKenglish]{babel}           % Set up the language
+\usepackage[style=british]{csquotes}    % Advanced handling of quotes
+\usepackage[perpage]{footmisc}          % Count per-page
+
+%% siunitx is an incredible useful package to display numbers and their
+%% associated units.  It also offers extra commands to specify lists and ranges
+%% of values with units.  Some commands which it provides include:
+%% - \SI{quantity}{units}
+%% - \SIRange{start}{end}{units}
+%% - \SIList{a, b, ..., d}{units}
+%% With the units being given as `\kilo\metre\per\year\per\pico\barn`.
+\usepackage{siunitx}
+
+%% Adjust the way units are displayed in ranges and units so that they are only
+%% mentinoed once.
+\sisetup{
+  range-units=single,
+  list-units=single,
+}
+
+%% Graphics & Figure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Graphics can be included in a LaTeX document with
+%%
+%% ```
+%% \includegraphics[options]{image}
+%% ```
+%%
+%% Usually, the extension for the image is not specified and LaTeX will
+%% figure out the best one.  It is of course possible to add the extension to
+%% specify a particular image.
+%%
+%% In order to ensure that the image is a particular width, you can use
+%% `width=<distance>`.  This will also scale the height but keep the aspect
+%% ratio (if you also specify the height, the aspect ratio will not be kept).
+%% It is tempting to specify an exact distance such as `4cm`; but it is
+%% generally better to have a relative distance such as `0.4\linewidth`.  This
+%% way, the image will scale nicely if the context is changed.
+\usepackage{graphicx}   % Handle graphics
+
+%% Look for images in the './images/' sub-directory
+\graphicspath{{./images/}}
+
+\usepackage{xcolor}     % Define and use colours
+\usepackage{subcaption} % Subfigures inside a figure
+
+\usepackage{tikz}       % Powerful drawing language
+\usepackage{pgfplots}   % Plotting with LaTeX
+\pgfplotsset{compat=1.15}
+
+%% TikZ pictures and plots can significantly increase the time it takes to
+%% produce the output.  The `external` TikZ library library defers the creation
+%% of these figures to a sub-process which creates a separate PDF file which is
+%% then simply imported into the main document.  To call the sub-process, you
+%% have to execute the appropriate makefile.  If you are using LatexMk, you can
+%% use the `.latexmkrc` to automatically do this for you.
+%%
+%% The following setup works on Linux, and should work on OS X too.
+\usetikzlibrary{external}
+\tikzexternalize[shell escape=-shell-escape, prefix=images/tikz/]
+\immediate\write18{mkdir -p images/tikz/}
+\tikzset{
+    external/mode=list and make,
+    external/system call={
+        lualatex \tikzexternalcheckshellescape -halt-on-error -interaction=batchmode -jobname="\image" "\texsource" || rm "\image.pdf"},
+}
+
+\usepgfplotslibrary{
+  colorbrewer
+}
+
+%% Math Packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{amsmath}     % The core math package
+\usepackage{amssymb}     % Defines additional math fonts and symbols
+\usepackage{mathtools}   % Various extra maths functions
+\usepackage{dsfont}      % A double stroke font (for double stroke 1)
+
+%% Define a new command called \withnumber which forces the line to have number
+%% (even if it is referenced elsewhere).
+\newcommand\withnumber{\refstepcounter{equation}\tag{\theequation}}
+
+%% Allows page breaks in math (1 = avoid if possible, 4 = whenever).  Page
+%% breaks can be avoided at particular places by using \\* instead of \\.
+\allowdisplaybreaks[2]
+
+%% Only number referenced equations
+\mathtoolsset{showonlyrefs}
+
+%% Code
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{minted}
+
+%% Define a few commands to have inline code
+\newmintinline[rawinline]{text}{}
+\newmintinline[pythoninline]{python}{}
+
+\newminted{python}{autogobble,linenos}
+
+%% Linking and Referencing
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{hyperref}  % Automatically inserts hyperlinks.
+\usepackage{cleveref}  % Use `\cref` to reference anything
+
+%% Define some slightly nicer colors
+\definecolor{link-color}{RGB}{96 0 0}
+\definecolor{cite-color}{RGB}{0 96 0}
+\definecolor{file-color}{RGB}{0 0 96}
+\definecolor{url-color}{RGB}{0 0 96}
+\definecolor{link-border-color}{RGB}{255 159 159}
+\definecolor{cite-border-color}{RGB}{159 255 159}
+\definecolor{file-border-color}{RGB}{159 159 255}
+\definecolor{url-border-color}{RGB}{159 159 255}
+
+\hypersetup{
+  %% When `colorlinks` is true, all links will be coloured which looks nice in
+  %% digital version of the document but not in print.  If the document is
+  %% intended for printing, then `colorlinks` should set to false.
+  colorlinks=true,
+  linkcolor=link-color,
+  citecolor=cite-color,
+  filecolor=file-color,
+  urlcolor=url-color,
+  linkbordercolor=link-border-color,
+  citebordercolor=cite-border-color,
+  urlbordercolor=url-border-color,
+}
+
+%% Glossary
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% This package requires `makeglossaries` to be run after the initial run of
+%% LaTeX so that the glossary is generated and the a second run of LaTeX is need
+%% to included the newly generated glossary.  (This is automatically handled by
+%% Latexmk with the provided .latexmkrc).
+
+%% hyperref should be loaded first
+\usepackage[toc]{glossaries}
+\usepackage{glossaries-extra}
+
+\setglossarystyle{index}
+\setabbreviationstyle[acronym]{long-short-sc}
+
+\loadglsentries{glossary.glos}
+
+% \makeglossaries
+
+%% Bibliography
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% hyperref should be loaded first
+\usepackage[
+  %% See the extensive documentation for biblatex for a description of what
+  %% these options do
+  autocite=inline,
+  backend=biber,
+  biblabel=brackets,
+  doi=true,
+  eprint=true,
+  maxnames=4,
+  style=phys,
+]{biblatex}
+
+%% Add a bib file
+\addbibresource{references.bib}
+
+%% Other modifications/package
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{jpellis}
+
+%% Question
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable}
+
+
+% \usepackage{framed}
+
+\newcounter{question}
+\newenvironment{question}{%
+  \stepcounter{question}%
+  \begin{tcolorbox}[
+      colframe=black,
+      sharp corners=all,
+      boxsep=0.5ex,
+    ]
+    \noindent\textsc{\large Question \arabic{question}:} %
+}{%
+  \end{tcolorbox}%
+}
+
+%% Document Information
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Define a few shorthand commands.  The `makeatletter' and `makeatother' allows
+%% the use of '@' in commands which is reserved for hidden functions.
+\makeatletter
+\newcommand\@department{}
+\newcommand\department[1]{\renewcommand\@department{#1}}
+
+\newcommand\@university{}
+\newcommand\university[1]{\renewcommand\@university{#1}}
+
+\newcommand\@keywords{}
+\newcommand\keywords[1]{\renewcommand\@keywords{#1}}
+
+\AtEndPreamble{
+  %% Set the PDF metadata, though this can only be done once they've been all
+  %% defined which is at the end of the preamble.
+  \hypersetup{
+    pdftitle={\@title},
+    pdfauthor={\@author},
+    pdfsubject={\@subject},
+    pdfkeywords={\@keywords},
+  }
+}
+\makeatother
+
+%% The \texorpdfstring string will, depending on context, either print proper
+%% TeX command (in this case LaTeX will the special kerning), or the plain text
+%% fallback.  This is useful if you have equation, links or special formatting
+%% in titles as the PDF bookmarks can't handle them.
+\title{Ultracold Atoms}
+\subtitle{\texorpdfstring{
+    \textsc{phyc30021} -- Laboratory and Computational Physics 3
+  }{
+    PHYC30021 -- Laboratory and Computational Physics 3
+  }
+}
+
+\subject{Ultracold Atoms Lab}
+\keywords{lab notes, ultracold atoms}
+
+\author{R.~A.~Henry \& J.~P.~Ellis}
+\department{School of Physics}
+\university{The University of Melbourne}
+
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% DOCUMENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+%% Adjust the pagenumbering to capital Latin letters
+\pagenumbering{Alph}
+
+%% Title
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% We don't want any page numbers, chapter headings, etc. on the page
+\pagestyle{empty}
+
+\begin{titlepage}
+  \makeatletter
+  \begin{center}
+    \vspace*{2.5cm}
+    {\Huge \@title}
+    \vskip0pt
+    \rule{\linewidth}{2pt}
+    \vskip0pt
+    {\Large \@subtitle}
+    \vskip\fill
+    \includegraphics[width=0.3\paperwidth]{unimelb}
+    \vskip\fill
+    {\Large By \@author}
+    \vskip0.5em
+    {\Large \@department}
+    \vskip2em
+    {\large \@date}
+  \end{center}
+
+\makeatother
+\end{titlepage}
+
+%% Table of Content
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleardoublepage
+\pagestyle{plain}
+\pagenumbering{roman}
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% CONTENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleardoublepage
+\pagestyle{headings}
+\pagenumbering{arabic}
+
+\section{Introduction}
+\label{sec:introduction}
+
+In this experiment, you will use a simple version of the powerful numerical
+technique known as the \gls{SVM} to find the ground state energy of two
+strongly-interacting cold atoms in a harmonic trap.  The \gls{SVM} involves
+building up an approximation of the system's ground state by taking random
+samples of Gaussians (or other functions) with different length parameters, and
+using only the Gaussian which gives the most significant contributions to
+improve the approximation, while discarding the others.  The two-body system is
+one of the simplest nontrivial examples of a few-body ultracold atomic system,
+and is one of the few nontrivial quantum systems which can be solved exactly,
+which will allow you to compare your numerical result to the known exact value.
+
+\subsection{Ultracold Atom Physics}
+\label{subsec:ultracold_atom_physics}
+
+Ultracold atom physics is a relatively new field of study, but is now one of the
+most active and fruitful areas of modern physics research.  An ultracold gas
+experiment involves somewhere between a handful and a few thousand atoms that
+are cooled to temperatures close to absolute zero, typically well below
+\SI{1}{\micro\kelvin}.  Beyond this basic definition, there is a great variety
+of experimental and theoretical systems that fall within the ultracold atom
+field.  Many novel and exotic quantum physical phenomena can be found in
+ultracold atom systems, such as \glspl{BEC}, superfluidity, quantum magnetism,
+the quantum hall effect, many-body localisation and quantum phase transitions.
+
+\subsection{Two-Body System}
+\label{subsec:two-body_system}
+
+We will be considering a two-particle system which are both in a shared harmonic
+potential.  The equation describing their interaction is
+\begin{equation}
+  \label{eq:hamiltonian_general}
+  H = H_{1} + H_{2} + V(r_{12})
+\end{equation}
+where \(H_{i}\) describes the interaction of the \(i\)th particle with the
+harmonic trap,
+\begin{equation}
+  H_{i} \defeq - \frac{1}{2m_{i}} \nabla_{i}^{2} + \frac{1}{2} m \omega^{2} r_{i}^{2},
+\end{equation}
+in which \(\vt r_{i}\) is the position of the \(i\)th particle; and
+\(V(r_{12})\) describes the interaction between the two particles where \(r_{12}
+\defeq \norm{\vt r_{1} - \vt r_{2}}\) is the separation between the particles.
+
+In this lab, we will be concerned with identical particles such that \(m = m_{1}
+= m_{2} \) and we will also assume that they are in different spin states such
+that we need not worry about the (anti)symmetry of the Hamiltonian.
+
+\begin{question}
+  In the absence of \(V(r_{12})\), what are the energy levels of this two-body
+  system?  Remember that we are describing a three-dimensional system.
+\end{question}
+
+\begin{question}
+  Rewrite the two-body Hamiltonian in terms of the new coordinates:
+  \begin{align}
+    \vt r &\defeq \sqrt{\frac{1}{2}} (\vt r_{1} - \vt r_{2}), &
+    \vt R &\defeq \sqrt{\frac{1}{2}} (\vt r_{1} + \vt r_{2}).
+  \end{align}
+  You should find that the Hamiltonian can be separated into two:
+  \begin{equation}
+    \label{eq:hamiltonian_com_rel}
+    H = H_{\text{com}} + H_{\text{rel}}
+  \end{equation}
+  where \(H_{\text{com}}\) is (essentially) the centre-of-mass Hamiltonian and
+  depends only on \(\vt R\), and \(H_{\text{rel}}\) is the relative Hamiltonian
+  and depends only on \(\vt r\).
+\end{question}
+
+\cleardoublepage
+\section{Scattering Theory}
+\label{sec:scattering_theory}
+
+Before we can understand how the interaction term affects \(H_{\text{rel}}\), we
+will need some of the basic concepts of scattering theory.  In general,
+scattering theory is the study of how any sort of waves bounce off various
+objects or obstructions.  The evolution of the wave is specified by some partial
+differential equation which includes a potential term that specifies the object,
+or \emph{scatterer}.  In quantum mechanics, these waves are wavefunctions which
+evolve under the Schr\"odinger equation and the scatterer is typically a
+larger (but still microscopic) structure such as an atomic potential.
+
+Scattering theory is a large subject, and we will only cover some basic notions
+here.  In this section, we will be considering an abstract quantum system in
+which a particle scatters elastically off some three-dimensional potential
+\(V(\vt r)\).  In particular, we will be considering an interesting limit in
+which the potential can be described entirely by a single parameter, with all
+other details about the potential becoming irrelevant.
+
+\subsection{One-Dimensional Scattering}
+\label{subsec:one-dimensional_scattering}
+
+To get a little bit of intuition first, let's considering a one-dimensional
+system with a potential \(V(x)\).  Very far from the potential where \(V(x)
+\approx 0\), the solution of the Schr\"odinger equation has the form of a plane
+wave:
+\begin{align}
+  \label{eq:1d_scattering_wave}
+  \psi_{\scL} &= A e^{ikx} + B e^{-ikx} &
+  \psi_{\scR} &= C e^{ikx} + D e^{-ikx}
+\end{align}
+where \(k = \sqrt{2 m E / \hbar^{2}}\) and \(\psi_{\scL,\scR}\) describe the
+wave function to the left/right of the barrier.
+
+If we consider the initial wave to be coming from the left, then \(A\) describes
+the original incoming wave, \(B\) is the reflected wave and \(C\) is the
+transmitted wave.  As for \(D\), in this instance it is zero but it is useful to
+leave it in for the sake of completeness.  In this sense, the vector \((B, C)\)
+describes the new wave generated by the scattering of the initial wave described
+by the vector \((A, D)\).
+
+The \enquote{scattering amplitude} describes the transition from the incoming
+wave to the out-going wave.  When there are finitely many incoming and outgoing
+states, the amplitude is describe by a \emph{scattering matrix}, or \(S\)-matrix
+which, in this one-dimensional case, is:
+\begin{equation}
+  \label{eq:S-matrix}
+  \pmtx{B \\ C} = \pmtx{S_{11} & S_{12} \\ S_{21} & S_{22}} \pmtx{A \\ D}.
+\end{equation}
+In order that the \(S\)-matrix conserves probability, it must be unitary (that
+is \(S^{\dagger} S = 1\)); and since the Schr\"odinger is invariant under time
+reversal, the \(S\)-matrix must be symmetric.
+
+\subsection{The Scattering Length and Universality}
+\label{subsec:the_scattering_length_and_universality}
+
+In \cref{subsec:one-dimensional_scattering}, we considered the scattering of a
+wave with wavenumber \(k\) scattering of a potential \(V(x)\) without really
+considering what \(V(x)\) is.  It is possible that \(V(x)\) is an incredibly
+complicated function, but being a potential it will always be true that \(V(x)
+\to 0\) as \(x\) becomes sufficiently large.  What happens then if the
+wavelength of the particle is much larger than the region where \(V(x)\) is
+non-zero?  This will happen when \(k \to 0\) and thus when \(E \to 0\), which is
+exactly what we have with ultracold atoms.
+
+Your intuition for quantum mechanics and the way waves behave should tell you
+that the particle will not be able to see the intricacies of the potential.
+Without going into the derivation, it should not seem unreasonable that in the
+limit that \(k \to 0\), the potential will resemble a solid sphere of radius
+\(a_{s}\)---and indeed the scattering theory does confirm this.  This particular
+limit is called the \emph{universality limit} specifically because all
+potentials are described solely by their scattering length and are independent
+of the exact details of the underlying potential.  This the scattering of a van
+der Waals potential (\(\propto r^{-6}\)) can be equally well described by a
+Gaussian potential or even a Dirac delta.
+
+The scattering length can take any value from \(-\infty\) through to
+\(+\infty\), with positive value indicating an attractive interaction; and
+negative values indicating a repulsive interaction.  The large the scattering
+length, the stronger the interaction between the particles with the limit at
+\(\pm \infty\) being the strongly interacting (or \emph{unitary}) regime.
+
+The potentials we will be interested in will have two parameters: an interaction
+length \(r_{0}\), and a strength \(V_{0}\).  The actual scattering length is in
+general a function of these two parameters, though the derivation of the
+scattering length for various potentials is beyond the scope of this lab.
+
+\cleardoublepage
+\section{Analytic Solution}
+\label{sec:analytic_solution}
+
+We now return to our two-body system and its Hamiltonian
+(\cref{eq:hamiltonian_general,eq:hamiltonian_com_rel}).  As we are dealing with
+ultracold atoms, we are in the limit \(k \to 0\) and thus the potential
+describing how the two atoms interact can be solely described by the scattering
+length of the potential.
+
+In order to arrive to an analytic solution, \citeauthor{busch1998}
+\cite{busch1998} take advantage of the universality limit and use a Dirac-delta
+potential as it has many nice analytical properties.  To be precise, they use
+the regularized Dirac-delta potential
+\begin{equation}
+  V(r_{12}) \defeq 4 \pi a_{s} \delta(\vt r_{12}) \pfrac{}{r_{12}} r_{12},
+\end{equation}
+where the derivative needs to be introduced in order to ensure that the
+Hamiltonian is self-adjoint\footnote{Had they not introduced the derivative, the
+  \textsc{3d} Hamiltonian would in fact only reproduce the non-interacting
+  theory}.
+
+Using this potential they are able to derive the following analytic expression
+which relates the scattering length to the energy levels of the system:
+\begin{equation}
+  \label{eq:eigenvalues_exact}
+  \sqrt{2}\frac{\Gamma(-E/2 + 3/4)}{\Gamma(-E/2 + 1/4)} = \frac{1}{a_{s}}.
+\end{equation}
+Here, \(\Gamma(x)\) is the gamma function which is a generalization of the
+factorial function \(n! \defeq n \cdot (n-1) \cdots 2 \cdot 1\) to the entire
+complex plane (remember that \(\Gamma(n) \equiv (n - 1)!\) for \(n \inN\)).
+Note that in order to make the solution easier, they have assumed some
+particularly \enquote{nice} values of \(m\) and \(\omega\) in the potential
+(what are they?).
+
+Any value of \(E\) which satisfies the above equation is an energy eigenvalue of
+the system for a given value of the scattering length \(a_{s}\).  The derivation
+of this equation is not reproduced here and can be found in the original paper.
+
+\begin{question}
+  Find the solutions of \cref{eq:eigenvalues_exact}.  Note that it is not
+  possible to analytically rewrite \cref{eq:eigenvalues_exact} in the form \(E =
+  \dots\), so you will have to employ a root-finding algorithm.
+
+  What are the eigenvalues in the strongly interacting regime?
+
+  How do they eigenvalues changed based on \(a_{s}\) (both positive and
+  negative)?
+\end{question}
+
+% \subsection{Relative Coordinates}
+% \label{subsec:relative_coordinates}
+
+% The first step in simplifying the two-body problem, both in Busch's analysis and
+% in the numerical method we will be using, is to change coordinates.  This is the
+% usual transformation to relative and centre of mass coordinates, given by:
+% \begin{align}
+%   \vt r &= \vt r_1 - \vt r_2, \\
+%   \vt R &= \frac{1}{2}(\vt r_1 + \vt r_2).
+% \end{align}
+% We will also now set \(m=1\) and \(\omega = 1\).  Setting the mass to unity has
+% no effect on the physics of this system, as it is equivalent to a rescaling of
+% the coordinates; while setting \(\omega\) to a different value would simply
+% rescale the energies by that factor.
+
+% With this transformation, the Hamiltonian becomes:
+% \begin{equation}
+%   \hat{H} = \hat{H}_\text{com} + \hat{H}_\text{rel} = - \nabla_R^2 + R^2 - \nabla_r^2 + \frac{1}{4} r^2 + V(r).
+%   \label{eq:Hamiltonian}
+% \end{equation}
+
+% \begin{question}
+%   Prove the equality in eq.(\ref{eq:Hamiltonian})
+% \end{question}
+
+% We note that Busch et al. use a slightly different version of this
+% transformation.  Regardless, since the Schr\"odinger equation is linear, we can
+% now solve the relative and centre of mass parts separately.  The centre of mass
+% part is a standard \textsc{3d} harmonic oscillator, with energies given by
+% \cref{eq:qho_3d}.  The interesting part of the problem is entirely in the
+% relative coordinates, due to the interaction term.  The two-body problem is thus
+% reduced to finding the solutions of the relative eigenvalue equation:
+% \begin{equation}
+%   E\psi_\text{rel}(r) = \hat{H}_\text{rel} \psi_\text{rel}(r),
+% \end{equation}
+% with \(\hat{H}_\text{rel}\) given above.  From here on, we will ignore the centre of
+% mass entirely, as is standard in the literature (i.e.~in most papers on few-body
+% physics).  Busch et al. then use an analytic method to get from this equation to
+% \cref{eq:eigenvalues_exact}.  Of course, we will instead be finding a numerical
+% solution that will give the same result.
+
+\cleardoublepage
+\section{Numerical Solution}
+\label{sec:numerical_solution}
+
+We now know enough about the two-body problem to learn how an approximate
+numerical method can be applied to find an extremely accurate solution.  This
+method we will use is the \gls{SVM}.  Variational methods are common and
+versatile tools for finding an approximate (and sometimes arbitrarily precise)
+solution to a \glspl{PDE}.  They work by making a initial guess about the general
+form of the solution called an \emph{ansatz}, and then modifying the ansatz in
+such a way as to converge to the solution.
+
+We will first be describing some of the numerical tools we need in order to
+implement the \gls{SVM}, and then discuss at the end how the \gls{SVM} algorithm
+works.
+
+\subsection{Using Basis Functions}
+\label{subsec:using_basis_functions}
+
+Since we don't know the exact form of the solution, we must make some sort of
+guess, or ansatz, for the solution of the \gls{PDE} (or we would not be
+resorting to numerical solutions).  One overly simple ansatz would be try every
+function one after the other until we find the correct solution; however, the
+space of functions to cover is intractably large so unless we are able to narrow
+down the space of functions to test, this is simply infeasible.
+
+Fortunately for us, we need not try every function but can instead use a
+\emph{basis of functions} that can approximate a wide range of functions.  If we
+can find the appropriate combination of basis functions and now how much of each
+function we need, we should be able to approximate our solution well.  The
+solution will then be of the form:
+\begin{equation}
+  \label{eq:ansatz_definition}
+  \ket{\phi} = \sum_{n} \ket{\phi_{n}},
+\end{equation}
+where \(\{\ket{\phi_{n}}\}\) are the basis functions and \(c_{n}\) are the
+expansion coefficients.
+
+We are free to choose from a very wide choice of basis functions, but for reason
+that should become apparent later, we will be using Gaussians of the form
+\begin{equation}
+  \label{eq:basis_definition}
+  \phi_{n}(\vt r) = \phi_{n}(r) Y^{0}_{0}(\theta,\phi)
+  = \frac{1}{\sqrt{4\pi}} e^{- r^{2} / 2 w_{n}^{2}},
+\end{equation}
+where \(w_n\) is the width of the Gaussian.  Note that we are using the
+\(s\)-type solution (\(Y^{0}_{0}\)), but it is possible to incorporate excited
+modes with \(\ell \neq 0\) by extending our basis to
+\begin{equation}
+  \phi_{n,\ell,m}(\vt r) = \phi_{n}(r) Y^{m}_{\ell}(\theta,\phi).
+\end{equation}
+
+By using many different widths, our basis will be able to capture variation in
+the true ground state on many different length scales, allowing a good
+approximation to be reached.
+
+\subsection{Determining Energy of Ansatz}
+\label{subsec:determining_energy_of_ansatz}
+
+So at this stage, we have our ansatz described by \cref{eq:ansatz_definition}
+and we must compute the ground state energy associated with this ansatz and find
+the set of coefficient \(\{c_{n}\}\) which will be approximate the ground state.
+
+Essentially, we need to find the values of the coefficients \(c_n\) which give
+the lowest energy i.e.~we want to find the minimum of the energy \(E\) with
+respect to variations in \(c_n\).  To do this, we start with the definition of
+the energy \(E\), and compute the infinitesimal change in energy \(\delta E\)
+corresponding to a small change in one of the coefficients, \(\delta c_i\), then
+set \(\delta E = 0\), corresponding to a local minimum in the energy:
+\begin{subequations}
+  \begin{align}
+    E &= \angles{H} \\
+      &= \frac{\brakket{\phi}{H}{\phi}}{\braket{\phi}{\phi}} \\
+      &= \frac{\sum_{n,m} c_n c_m \brakket{\phi_n}{H}{\phi_m}}{\sum_{n,m} c_nc_m \braket{\phi_n}{\phi_m}} \\
+    E \sum_{n,m} c_nc_m \braket{\phi_n}{\phi_m} &= \sum_{n,m} c_n c_m \brakket{\phi_n}{H}{\phi_m} \\
+    E \sum_{n,m} c_nc_m \mathcal{S}_{nm} &= \sum_{n,m} c_n c_m \mathcal{H}_{nm},
+  \end{align}
+\end{subequations}
+where we have defined \(\mathcal{S}_{nm} = \braket{\phi_n}{\phi_m}\) and
+\(\mathcal{H}_{nm} = \brakket{\phi_n}{H}{\phi_m}\).  These can be considered
+elements of some \(N\) by \(N\) matrices \(\mathcal{H}\) and \(\mathcal{S}\),
+where \(N\) is the number of states in our basis.  We now apply the perturbation
+to some \(c_i\), which causes \(c_i \rightarrow c_i + \delta c_i\) and \(E
+\rightarrow E + \delta E\).  We compute the resulting differential in both sides
+of the equation, noting that we must apply the product rule on the left hand
+side:
+\begin{subequations}
+  \begin{align}
+    \MoveEqLeft \delta E \sum_{n,m} c_nc_m \mathcal{S}_{nm} + \delta c_i E\sum_m c_m \mathcal{S}_{im} + \delta c_i E\sum_n c_n \mathcal{S}_{ni} \\
+    &= \delta c_i \sum_m c_m \mathcal{H}_{im} + \delta c_i \sum_n c_n \mathcal{H}_{ni} \\
+    \delta E \braket{\phi}{\phi} &= 2\delta c_i \sum_n c_n (\mathcal{H}_{ni} - E\mathcal{S}_{ni}),
+  \end{align}
+\end{subequations}
+where we have recognised that the two summations are identical since
+\(\mathcal{H}\) and \(\mathcal{S}\) must be symmetric.  Now, letting \(\delta E
+\rightarrow 0\), viewing the summations as matrix multiplications, and writing
+the set of expansion coefficients as a set of vectors \(\vt c\), we arrive at:
+\begin{equation}
+  \label{eq:generalized_eigenvalue_equation}
+  \mathcal{H}\vt c = E\mathcal{S} \vt c.
+\end{equation}
+
+The last equation, \cref{eq:generalized_eigenvalue_equation}, resembles a matrix
+eigenvalue equation for the matrix \(\mathcal{H}\), where \(E\) is a diagonal
+matrix of eigenvalues, except that we have an additional matrix \(\mathcal{S}\).
+This is known as a \emph{generalized eigenvalue equation}, with the matrices
+\(\vt c\) and scalar \(E\) being the generalised eigenvectors and eigenvalues
+respectivley.  We could multiply both sides by \(\mathcal{S}^{-1}\) and quickly
+reach a regular eigenvalue equation.  However, it is actually more
+computationally efficient to solve the generalised eigenvalue equation than to
+compute the inverse of a large matrix, so we leave it as is.
+
+Finally, given an initial set of basis functions \(\{\phi_{n}\}\), we have found
+the optimal coefficients \(\{c_{n}\}\) such that the linear combination
+\(\sum_{n} c_{n} \phi_{n}\) approximates the ground state best.  We were able to
+do so because the matrices \(\mathcal{H}\) and \(\mathcal{S}\) only depend on
+the basis states and the Hamiltonian, and the calculation of \(\{c_{n}\}\) came
+down to just a linear algebra problem.
+
+\begin{question}
+  What information does the matrix \(\mathcal{S}\) encode?
+\end{question}
+
+\subsubsection{Calculating Matrix Elements}
+\label{subsubsec:calculating_matrix_elements}
+
+As mentioned above, we must calculate the matrices \(\mathcal{H}\) and
+\(\mathcal{S}\) which are defined by
+\begin{align}
+  \label{eq:S_H_matrix_definition}
+  \mathcal{S}_{nm} &= \braket{\phi_{n}}{\phi_{m}}, &
+  \mathcal{H}_{nm} &= \brakket{\phi_{n}}{H}{\phi_{m}}.
+\end{align}
+Since we know the form of the basis functions in position space
+(\cref{eq:basis_definition}), the evaluation of these brakets becomes an
+integral over space.  Explicitly:
+\begin{subequations}
+  \begin{align}
+    \mathcal{S}_{nm}
+    &= \braket{\phi_{n}}{\phi_{m}} \\
+    &= \int_{4\pi} \dd\Omega \int^{\infty}_{0} r^{2} \dd r \phi_{n}(\vt r) \phi_{m}(\vt r) \\
+  \end{align}
+\end{subequations}
+\begin{subequations}
+  \begin{align}
+    \mathcal{H}_{nm}
+    &= \brakket{\phi_{i}}{H}{\phi_{j}} \\
+    &= \int_{4\pi} \dd\Omega \int^{\infty}_{0} r^{2} \dd r \phi_{n}(\vt r) H_{\text{rel}} \phi_{m}(\vt r) \\
+  \end{align}
+\end{subequations}
+
+The difficulty of these integrals depends entirely on our choice of basis
+functions.  One could resort to using numerical integration; however, as we have
+\emph{3d} integrals, the computation time will increase very rapidly.  To be
+more precise, if we use a simple trapezoidal rule numerical integration with
+\(N\) subdivisions, these integrals will require summing up \(N^{3}\) points,
+and this has to be repeated for \emph{every pair of basis functions}!
+
+Fortunately, the choice of basis functions is ours and a judicious choice of
+basis functions might make these integrals analytically solvable.  One set of
+very nice functions to work with are Gaussians since the product of two
+Gaussians is a Gaussian, the derivative of a Gaussian is a Gaussian (multiplied
+by a polynomial), and the integral of a Gaussian has a simple analytic form:
+\begin{equation}
+  \mathcal{I}(a, n) \defeq \int_{0}^{\infty} x^{n} \exp(-a x^{2}) \dd x = \frac{1}{2 \sqrt{a^{n+1}}} \Gamma\left( \frac{n+1}{2} \right).
+\end{equation}
+If we also use a Gaussian for the potential \(V(r_{12})\), then everything is a
+Gaussian and everything can be integrated analytically.
+
+\begin{question}
+  Express the matrix elements \(\mathcal{S}_{ij}\) and \(\mathcal{H}_{ij}\) in
+  terms of the Gaussian integral \(\mathcal{I}(a, n)\).  Remember to use
+  spherical coordinates!
+\end{question}
+
+\subsection{Generation of Basis States}
+\label{subsec:generation_of_basis_states}
+
+At this stage, we are able to calculate the optimal set of coefficients
+\(\{c_{n}\}\) given a set of basis functions \(\{\phi_{n}\}\); however, how are
+we to find the set of basis functions \(\{\phi_{n}\}\)?
+
+This is where the \emph{stochastic} aspects comes into play in this lab because
+we simply don't know.  Lacking any other insight, then we might as well use
+trial-and-error and simply pick basis functions at random (hence
+\emph{stochastic}).
+
+This creates a significant problem though because programs like to be
+\emph{deterministic}.  As coders, we like to know exactly what the code will do
+when, what kind of inputs we will get, etc.~which unfortunately won't happen in
+a stochastic algorithm.  As a result, we have to take a lot more care to
+consider \emph{all edge cases}.
+
+The general idea of the algorithm is as follows:
+\begin{enumerate}
+\item Begin with a set of \(N\) states \(\{\phi_{n}\}\)
+\item Extend the basis by adding one new state, picked at random.
+\item Calculate the new ground state energy.  If the new ground state is lower
+  than the previous one, keep the new state in the basis.
+\item Go back to step 1.
+\end{enumerate}
+Note an easy optimization to the above algorithm would be to try a large number
+of random states and pick the best out of all of them (instead of stopping at
+the first improvement).
+
+As mentioned above though, great care must be taken to take into account
+different edge cases.  For example, what will happen if:
+\begin{itemize}
+\item the basis is extended by adding a new state that is already in the basis?
+\item the new basis that is added is invalid?
+\item the ground state energy becomes negative?
+\item there is a numerical instability in the generalized matrix equation?
+\end{itemize}
+
+There is one last aspect to discuss before moving on: how should the random
+state be picked?  As we have a spherically symmetric system, all our Gaussian
+are centered at the origin so the basis functions only vary in their width; as a
+result, selecting a random basis to add boils down to selecting a random width.
+The width itself can take any value in \([0, \infty)\), but do you expect that
+all choices from this interval be applicable for our system?  An incorrect
+choice of interval means that it make take a very large number of trials before
+finding a new set of basis functions that improves the ground state energy, or
+worse yet, might mean that you never can approximate the ground state solution.
+
+\subsubsection{Convergence Conditions}
+\label{subsubsec:convergence_conditions}
+
+We now have the ingredients of an algorithm that builds up a successively better
+approximation for the ground state energy, but how will we know when to stop?
+The simplest approach is just to limit the total number of states that will be
+used, a proscription which will suffice for this project.  Note that in some
+cases, adding additional basis states when the system is close to convergence
+will cause the simulation to break down and give rapidly decreasing negative
+eigenvalues.
+
+There are of course more advanced convergence conditions that will yield more
+consistent results.  A simple but effective approach is to calculate the
+relative (i.e.~percentage) difference in the energy compared to the previous
+step, and only accept new states that give a relative difference above some
+threshold and if no such state can be found the simulation ends.
+
+\subsection{Extrapolating to Zero-Range}
+\label{subsec:extrapolating_to_zero-range}
+
+Our algorithm relies on using a Gaussian potential in the Hamiltonian, of the
+form
+\begin{equation}
+  V_0 \exp{\left(-\frac{r^2}{2r_0^2}\right)},
+\end{equation}
+where \(r_0\) is the interaction length, and \(V_0\) determines the strength of
+the interaction.  Physically, the most appropriate value of \(r_{0}\) will be
+extremely small, so small in fact that \(r_{0}^{-2}\) will become impractically
+large for a computer to handle.  For this reason, we will be computing the
+ground state energy for a set of larger \(r_{0}\) and extrapolate to \(r_{0} =
+0\).  Fortunately for us, the dependence on the ground state energy on \(r_{0}\)
+is linear (for the values of \(r_{0}\) we are concerned with), so a straight
+line fit will suffice.
+
+The limit \(r_{0} \to 0\) will coincide with \(a_{s} \to \infty\) which will
+allow you to compare your numerical result with the analytical result found
+earlier.
+
+\subsection{Writing Your Simulation}
+\label{subsec:writing_your_simulation}
+
+You will be writing your code in Python.  Some skeleton code is provided, though
+you are free to write your own code.
+
+One thing you must keep in mind is that we are using a lot of random states.
+This means that functions aren't always guaranteed to work.  This means that
+when you functions must have a way of returning failures (for example, by return
+\pythoninline{None} instead of a number), and then when calling on functions
+which might fail, you must handle failures too.
+
+For example, when building up your basis, you might be tempted to simply have:
+
+\begin{pythoncode}
+while number_of_states < desired_number_of_state:
+    # Find a new state that improves fit and add it to the system
+\end{pythoncode}
+but what happens if you are no longer able to find new states that improve the
+fit to the ground state before the desired number of states is reached?
+
+Also be aware that when adding more states, your matrices can become numerically
+unstable and finding eigenvalues will result in an error.  Since we know this
+error might occur, we must handle it appropriately in Python.  This is described
+within the skeleton code provided.
+
+\begin{question}
+  At each step of the simulation, you re-solve the generalised eigenvalue
+  problem to obtain \(N\) eigenvalue, where \(N\) is the number of basis functions
+  at that step.  The first eigenvalue is the ground state energy.  What do the
+  other eigenvalues represent? Are their values useful?
+\end{question}
+
+\begin{question}
+  Plot the ground state energy as a function of the size of your basis and
+  comment on its convergence.  What about plotting the first or even second
+  excited state as a function of the basis size.
+
+  Note that given this is stochastic, it might be worth repeating this many
+  times and then aggregating the data before plotting it.
+\end{question}
+
+\begin{question}
+  What is the probability density of the ground state you have found?
+\end{question}
+
+\subsection{Extensions}
+\label{subsec:extensions}
+
+The lab can be extended in one of two fairly obvious ways.  Firstly, one can
+easily look at the effect of changing \(\omega\) and \(m\) on the energy
+levels.
+
+Another extension would be to consider a slightly different basis.  In this lab,
+we considered only \(\ell = 0\) solutions; but what if we used \(\ell = 1\)
+(i.e.~\(p\)-wave)?  What if we combined with \(\ell = 0\) and \(\ell = 1\)?
+
+Alternatively, you could also extend the basis from purely Gaussians to
+Gaussians multiplied by a polynomial:
+\begin{equation}
+  \phi_{n,a,b} = \frac{(1 + a r + b r^{2})}{\sqrt{4 \pi}} e^{-r^{2} / 2 w_{n}^{2}}
+\end{equation}
+This is slightly more complicated to handle than pure Gaussians, but still has
+the nice properties discussed in \cref{subsubsec:calculating_matrix_elements}.
+
+\cleardoublepage
+\printbibliography
+
+\end{document}

@@ -1,0 +1,7 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% GLOSSARY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newabbreviation[category=acronym]{SVM}{svm}{stochastic variational method}
+\newabbreviation[category=acronym]{BEC}{bec}{Bose--Einstein condensate}
+\newabbreviation[category=acronym]{PDE}{pde}{partial differential equation}

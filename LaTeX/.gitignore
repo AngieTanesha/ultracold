@@ -1,0 +1,41 @@
+# Ignore LaTeX temporary files
+*.aux
+*.auxlock
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.figlist
+*.fls
+*.glg
+*.glo
+*.gls
+*.ist
+*.loa
+*.loe
+*.log
+*.makefile
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex
+*.synctex.gz
+*.toc
+*.unq
+_minted-*/
+
+# Gnuplot files aren't strictly speaking temporary; however, they are
+# regenerated (provided the person has gnuplot).  Same goes for the externalized
+# TikZ graphics.
+images/tikz/
+notes.*.gnuplot
+notes.*.table
+
+# Ignore AUCTeX folder and files
+auto/
+_region_.*
+
+# Ignore backup files and temporary files
+*~
+*#
