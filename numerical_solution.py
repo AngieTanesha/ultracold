@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Numerical Solution I CHanged
+"""Numerical Solution again
 =====================
 
 Now that we have an analytic solution, we can use the stochastic variational
