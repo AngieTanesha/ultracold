@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Numerical Solution
+"""Numerical Solution I CHanged
 =====================
 
 Now that we have an analytic solution, we can use the stochastic variational
@@ -45,11 +45,12 @@ def gaussian_integral(k: float, n: float) -> float:
     k: float
 
       The constant in the exponential
+      Tests
 
     Returns
     =======
 
-    integral: float
+    integral: floats
 
       The value of the integral
 
