@@ -108,11 +108,14 @@ def lowest_eigenvalue(S, H):
     Returns
     =======
 
-    The lowest eigenvalue of the generalized matrix equation.
+    The lowest eigenvalue and its index of the generalized matrix equation.
 
     """
-    return eigenvalues(S,H).amin()
+    evalues = eigenvalues(S,H)
+    lowest = np.amin(evalues)
+    index = np.where(evalues == lowest)
 
+    return lowest, index
 
 def plot_fit(x, y, p, Cp, nsig=1, ax=None):
     """Plot data along with the polynomial fit's confidence interval.
@@ -163,7 +166,7 @@ def plot_fit(x, y, p, Cp, nsig=1, ax=None):
     y += np.randn(10)
 
     p, Cp = np.polyfit(x, y, deg=2, cov=True)
-    plot_fit(x, y, p, Cp)
+    plot_fit(x, y, p, Cp)raise NotImplementedError()
     ```
 
     """
@@ -353,24 +356,32 @@ class System():
         The S matrix.
 
         """
-        # ______________________________________________________________________
 
-        # If new_state = None
-        # Initialise the S matrix
-        S_proposed = np.zeros((self.states.shape[0], self.states.shape[0]))
+        if np.any(new_state):
 
-        # ______________________________________________________________________
+            # If there are new states, and new_state has to be a 1 x n array
+            # (it is important for new_state to be a Numpy array for the
+            # following code to work).
 
-        # If new_state != None, and new_state is a 1 x n array (it is important
-        # for new_state to be a Numpy array for the following code to work).
+            # Combine the states from the system with the new state
+            states = np.append(self.states, new_state)
 
-        # Create a row and column vector from list
-        si, sj = np.meshgrid(new_state, new_state)
+            # Create a row and column vector from this list of new states
+            si, sj = np.meshgrid(states, states)
 
-        # Return S elements as an n x n array
-        return self.calculate_S_elem(si, sj)
+            # Return S elements as an n x n array
+            return self.calculate_S_elem(si, sj)
 
-        # ______________________________________________________________________
+
+        else:
+            # If there are no new states, return the S elements using the states
+            # that are already in the system.
+
+            si, sj = np.meshgrid(self.states, self.states)
+
+            return self.calculate_S_elem(si, sj)
+
+
 
 
     def calculate_H_elem(self, si: float, sj: float) -> float:
@@ -421,18 +432,30 @@ class System():
         The H matrix.
 
         """
-        # ______________________________________________________________________
 
-        # If new_state != None, and new_state is a 1 x n array (it is important
-        # for new_state to be a Numpy array for the following code to work).
+        if np.any(new_state):
 
-        # Create a row and column vector from list
-        si, sj = np.meshgrid(new_state, new_state)
+            # If there are new states, and new_state has to be a 1 x n array
+            # (it is important for new_state to be a Numpy array for the
+            # following code to work).
 
-        # Return S elements as an n x n array
-        return self.calculate_H_elem(si, sj)
+            # Combine the states from the system print("S \n", S)with the new state
+            states = np.append(self.states, new_state)
 
-        # ______________________________________________________________________
+            # Create a row and column vector from this list of new states
+            si, sj = np.meshgrid(states, states)
+
+            # Return S elements as an n x n array
+            return self.calculate_H_elem(si, sj)
+
+
+        else:
+            # If there are no new states, return the H elements using the states
+            # that are already in the system.
+
+            si, sj = np.meshgrid(self.states, self.states)
+
+            return self.calculate_H_elem(si, sj)
 
     def gen_random_state(self, size=None) -> float:
         """Generate a random state with width between [r0 / 100, 100 * r0).
@@ -457,10 +480,10 @@ class System():
 
         """
         if size == None:
-            return np.random.uniform
+            return np.power(np.random.uniform(self.r0/100, 100*self.r0,1), -2)
 
         else:
-            return np.random.uniform(size)
+            return np.power(np.random.uniform(self.r0/100, 100*self.r0, size), -2)
 
 
     def find_new_state(self, tries=2048):
@@ -490,12 +513,25 @@ class System():
         You decide (though probably should return the best state).
 
         """
-        raise NotImplementedError()
+
+        new_state = self.gen_random_state(tries)
+        print("New states\n")
+        print(new_state)
+
+        S = self.calculate_S(new_state)
+        H = self.calculate_H(new_state)
+
+        print("S  \n", S)
+        print("H  \n", H)
+
+        print(lowest_eigenvalue(S,H))
+
+
 
     def construct_basis(self, nstates: int, max_failures=16):
         """The construct the basis with the desired number of states.
 
-        The is the main loop with will try and construct a basis with the
+        This is the main loop with will try and construct a basis with the
         desired number of states, `nstates`.  Note that this is a stochastic
         process and in particular, you have to handle the possibility that new
         states or improvements can't be found.
@@ -514,15 +550,14 @@ class System():
           The maximum number of failures permitted when trying to find a new
           state.
 
-        =
-        #S_proposed = np.array([])
+
         Returns
         =======
 
         Up to you to decide what, if anything, this function should return.
 
         """
-        raise NotImplementedError()
+
 
 
 if __name__ == "__main__":
@@ -531,16 +566,13 @@ if __name__ == "__main__":
     if not output_dir.is_dir():
         output_dir.mkdir()
 
-    # Main code goes here
-
-    print("Test system for debugging")
-    print("=========================")
-    system = System(r0=1 / np.sqrt(2), v0=1)
-    system.states = np.array([system.r0 / 2, system.r0 / 4])
-    system.states = np.power(system.states, -2)
-    print("States: ", system.states)
-
     # __________________________________________________________________________
+
+    # If you are going to do a polynomial fit, have a loop at the documentation
+    # for NumPy's `polyfit` function.  You can also have a look at the
+    # functions provided at the top of this file called `plot_fit` and
+    # `polyfit_error` which will assist in using the result from NumPy's
+    # polyfit.
 
     # Testing the gaussian integral is a gamma function
 
@@ -565,22 +597,21 @@ if __name__ == "__main__":
 
     # __________________________________________________________________________
 
-    # Testing the S array for a given new_state
-    new_state = system.get_random_state(5)
-    print(new_state)
+    # Main code goes here
 
-    # __________________________________________________________________________
-    S = system.calculate_S(new_state)
-    H = system.calculate_H(new_state)
-    print("S: \n", S)
-    print("H: \n", H)
+    print("Test system for debugging")
+    print("=========================")
+    system = System(r0=1 / np.sqrt(2), v0=1)
+    system.states = np.array([system.r0 / 2, system.r0 / 4])
+    system.states = np.power(system.states, -2)
+    print("States: ", system.states)
+
+    #S = system.calculate_S()
+    #H = system.calculate_H()
+    #print("S: \n", S)
+    #print("H: \n", H)
+
+    # Finding new states
+    print(system.find_new_state())
 
     print("\n")
-
-    # If you are going to do a polynomial fit, have a loop at the documentation
-    # for NumPy's `polyfit` function.  You can also have a look at the
-    # functions provided at the top of this file called `plot_fit` and
-    # `polyfit_error` which will assist in using the result from NumPy's
-    # polyfit.
-
-    raise NotImplementedError()
