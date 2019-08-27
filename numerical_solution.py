@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-"""Numerical Solution again
+"""Numerical Solution
 =====================
-i changed sth 
-
 Now that we have an analytic solution, we can use the stochastic variational
 method to get a numerical estimate and check whether it matches what we expect.
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Numerical Solution again
+"""Numerical Solution
 =====================
+I changed sth
 
 Now that we have an analytic solution, we can use the stochastic variational
 method to get a numerical estimate and check whether it matches what we expect.
@@ -45,17 +46,16 @@ def gaussian_integral(k: float, n: float) -> float:
     k: float
 
       The constant in the exponential
-      Tests
 
     Returns
     =======
 
-    integral: floats
+    integral: float
 
       The value of the integral
 
     """
-    return (1 / (2 * np.sqrt(m.pow(k, n+1)))) * gamma((n + 1) / 2)
+    return 1 / (2 * np.sqrt(k ** (n+1) )) * gamma((n + 1) / 2)
 
 
 def eigenvalues(S, H):
@@ -326,7 +326,7 @@ class System():
           The S matrix element associated with the two state.
 
         """
-        return gaussian_integral(0.5 * (pow(si, 2) + pow(sj, 2)), 2)
+        return gaussian_integral(0.5 * (si + sj), 2)
 
     def calculate_S(self, new_state=None):
         """Compute the matrix S_{ij} from scratch and return it.
@@ -353,8 +353,24 @@ class System():
         The S matrix.
 
         """
-        y_dim, x_dim = new_state.shape
-        return np.array([calculate_S_elem(x, y) for x in x_dim for y in y_dim])
+        # ______________________________________________________________________
+
+        # If new_state = None
+        # Initialise the S matrix
+        S_proposed = np.zeros((self.states.shape[0], self.states.shape[0]))
+
+        # ______________________________________________________________________
+
+        # If new_state != None, and new_state is a 1 x n array (it is important
+        # for new_state to be a Numpy array for the following code to work).
+
+        # Create a row and column vector from list
+        si, sj = np.meshgrid(new_state, new_state)
+
+        # Return S elements as an n x n array
+        return self.calculate_S_elem(si, sj)
+
+        # ______________________________________________________________________
 
 
     def calculate_H_elem(self, si: float, sj: float) -> float:
@@ -376,7 +392,9 @@ class System():
         The H matrix element associated with the two state.
 
         """
-        raise NotImplementedError()
+        k = 0.5 * (si + sj)
+        k2 = 0.5 * (1 / (self.r0**2) + si + sj)
+        return (-0.5 * (sj ** 2) + 0.5) * gaussian_integral(k, 4) + 1.5 * sj * gaussian_integral(k, 2) + self.v0 * gaussian_integral(k2,2)
 
     def calculate_H(self, new_state=None):
         """Compute the matrix H_{ij} from scratch and return it.
@@ -403,7 +421,18 @@ class System():
         The H matrix.
 
         """
-        raise NotImplementedError()
+        # ______________________________________________________________________
+
+        # If new_state != None, and new_state is a 1 x n array (it is important
+        # for new_state to be a Numpy array for the following code to work).
+
+        # Create a row and column vector from list
+        si, sj = np.meshgrid(new_state, new_state)
+
+        # Return S elements as an n x n array
+        return self.calculate_H_elem(si, sj)
+
+        # ______________________________________________________________________
 
     def gen_random_state(self, size=None) -> float:
         """Generate a random state with width between [r0 / 100, 100 * r0).
@@ -427,7 +456,12 @@ class System():
         The random state, or array of random states with the specified size.
 
         """
-        raise NotImplementedError()
+        if size == None:
+            return np.random.uniform
+
+        else:
+            return np.random.uniform(size)
+
 
     def find_new_state(self, tries=2048):
         """Given the current states in the system, find a new state that
@@ -480,6 +514,8 @@ class System():
           The maximum number of failures permitted when trying to find a new
           state.
 
+        =
+        #S_proposed = np.array([])
         Returns
         =======
 
@@ -523,14 +559,19 @@ if __name__ == "__main__":
 
     ax.set_xlim(-10,0)
     ax.set_ylim(-1000,1000)
-    pyplot.show()
+    #pyplot.show()
 
     fig.savefig("output/numerical_gaussian_test.pdf")
 
     # __________________________________________________________________________
 
-    S = system.calculate_S()
-    H = system.calculate_H()
+    # Testing the S array for a given new_state
+    new_state = system.get_random_state(5)
+    print(new_state)
+
+    # __________________________________________________________________________
+    S = system.calculate_S(new_state)
+    H = system.calculate_H(new_state)
     print("S: \n", S)
     print("H: \n", H)
 
