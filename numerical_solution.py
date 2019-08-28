@@ -75,7 +75,6 @@ def eigenvalues(S, H):
         except (np.linalg.linalg.LinAlgError, ValueError):
             return False
 
-
         return sp.linalg.eigh(H, S)[0]
 
 
@@ -135,8 +134,8 @@ def plot_fit(x, y, p, Cp, nsig=1, ax=None):
     y = 3*x + 10*x*x - 4
     y += np.randn(10)
     p, Cp = np.polyfit(x, y, deg=2, cov=True)
-    plot_fit(x, y, p, Cp)raise NotImplementedError()
-    ```
+    plot_fit(x, y, p, Cp)
+    '''
     """
     if ax is None:
         _, ax = pyplot.subplots()
@@ -181,7 +180,7 @@ def polyfit_error(x, p, Cp):
 
 class System():
     """The system class in which all the parameters will be stored.
-    # WHAT ARE r0 and v0
+
     The system has some parameters (such as `r0` and `v0` which determine the
     trapping term) which are used throughout.  Although they are constant for a
     particular system, they in general can change between different systems and
@@ -236,6 +235,8 @@ class System():
         # actual width in `self.states` but store the inverse-square of the
         # widths.
         self.states = np.zeros(0)
+        self.ground_energies = np.zeros(0)
+
         self.S = np.zeros((self.states.shape[0], self.states.shape[0]))
         self.H = np.zeros((self.states.shape[0], self.states.shape[0]))
 
@@ -421,7 +422,9 @@ class System():
 
         # Calculate the lowest eigenvalue and its index from this S and H.
         best_e = lowest_eigenvalue(S_ori, H_ori)
+
         best_state = None
+
         for state in self.gen_random_state(tries):
             # Create the new S and H matrix by only considering one new state
             # and the old states at a time.
@@ -447,7 +450,7 @@ class System():
                 best_e = e
                 best_state = state
 
-        return best_state
+        return best_state, best_e
 
     def construct_basis(self, nstates: int, max_failures=16):
         """This construct the basis with the desired number of states.
@@ -480,13 +483,16 @@ class System():
         if self.states.shape[0] == 0:
 
             self.states = self.gen_random_state()
+            S = self.calculate_S()
+            H = self.calculate_H()
+            self.ground_energies = lowest_eigenvalue(S,H)
 
             nbasis += 1
             #print(f"    nbasis: {nbasis} with states {self.states}")
 
         while nbasis < nstates and nfails < max_failures:
 
-            new_basis = self.find_new_state()
+            new_basis, new_e = self.find_new_state()
 
             if new_basis is None:
                 nfails += 1
@@ -495,27 +501,29 @@ class System():
 
             nbasis += 1
             self.states = np.append(self.states, new_basis)
+            self.ground_energies = np.append(self.ground_energies, new_e)
 
             if nfails:
                 print(f"        {nfails} failures for basis {nbasis}, {self.states[nbasis-1]}")
             #print(f"    nbasis: {nbasis} with states {self.states}")
 
-        return self.states
+        return self.states, self.ground_energies
 
 if __name__ == "__main__":
-    # Make sure that the output/ directory exists, or create it otherwise.
-    output_dir = pathlib.Path.cwd() / "output"
-    if not output_dir.is_dir():
-        output_dir.mkdir()
-
-    # __________________________________________________________________________
-
     # If you are going to do a polynomial fit, have a loop at the documentation
     # for NumPy's `polyfit` function.  You can also have a look at the
     # functions provided at the top of this file called `plot_fit` and
     # `polyfit_error` which will assist in using the result from NumPy's
     # polyfit.
 
+    # __________________________________________________________________________
+    # Make sure that the output/ directory exists, or create it otherwise.
+
+    output_dir = pathlib.Path.cwd() / "output"
+    if not output_dir.is_dir():
+        output_dir.mkdir()
+
+    # __________________________________________________________________________
     # Testing the gaussian integral is a gamma function
 
     # Plotting Q3
@@ -538,27 +546,49 @@ if __name__ == "__main__":
     fig.savefig("output/numerical_gaussian_test.pdf")
 
     # __________________________________________________________________________
+    # Constructing the basis and getting their ground state energies
 
-    # Main code goes here
+    # Initialise the system, ie. their r0 and v0 values
+    system = System(r0=r0v0.R0[0] / np.sqrt(2), v0=r0v0.V0[0])
 
-    # Constructing the basis
+    # Set the desired number of basis as num_basis
     num_basis = 30
     print(f"Creating {num_basis} basis")
     print("=========================")
 
-    system = System(r0=r0v0.R0[0] / np.sqrt(2), v0=r0v0.V0[0])
-    #system.states = np.array([system.r0 / 2, system.r0 / 4])
-    #system.states = np.array([system.r0 / 2, system.r0 / 4])
-    #system.states = np.power(system.states, -2)
-    #print("States: ", system.states)
-
-
+    # print the number of errors and the basis this algorithm gets when calculating the eigenvalues.
     print(f"Errors (if any):")
-    basis = system.construct_basis(num_basis)
 
+    # Get the basis and their ground state energies.
+    basis, ground = system.construct_basis(num_basis)
+
+    # Print the basis and their energies.
     print("=========================")
-    print(f"\nFinal state of {len(basis)} basis: \n")
+    print(f"Final state of {len(basis)} basis: \n")
     print(basis)
 
+    print(f"\nwith ground energies\n")
+    print(ground)
+
+    # __________________________________________________________________________
+    # Plotting one set of ground state energy and the basis size
+
+    # Plotting Q7
+
+    x = np.arange(len(basis))
+    y = ground
+
+    fig, ax = pyplot.subplots()
+    ax.plot(x, y)
+    ax.set_title("Plot of ground state energies vs. size of basis")
+    ax.set_xlabel("size of basis")
+    ax.set_ylabel("$E_0$")
+    ax.grid(linestyle = "-.", linewidth = 0.01)
+
+    #ax.set_xlim(-10,0)
+    #ax.set_ylim(-1000,1000)
+    #pyplot.show()
+
+    fig.savefig("output/Q7_groundstate_" + str(len(basis)) + ".pdf")
 
     print("\n")
