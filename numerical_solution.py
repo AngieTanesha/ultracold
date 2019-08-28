@@ -482,7 +482,7 @@ class System():
             self.states = self.gen_random_state()
 
             nbasis += 1
-            print(f"    nbasis: {nbasis} with states {self.states}")
+            #print(f"    nbasis: {nbasis} with states {self.states}")
 
         while nbasis < nstates and nfails < max_failures:
 
@@ -490,13 +490,15 @@ class System():
 
             if new_basis is None:
                 nfails += 1
-                print(f"        nfails: {nfails}")
+
                 continue
 
             nbasis += 1
             self.states = np.append(self.states, new_basis)
 
-            print(f"    nbasis: {nbasis} with states {self.states}")
+            if nfails:
+                print(f"        {nfails} failures for basis {nbasis}, {self.states[nbasis-1]}")
+            #print(f"    nbasis: {nbasis} with states {self.states}")
 
         return self.states
 
@@ -539,25 +541,24 @@ if __name__ == "__main__":
 
     # Main code goes here
 
-    print("Test system for debugging")
+    # Constructing the basis
+    num_basis = 30
+    print(f"Creating {num_basis} basis")
     print("=========================")
+
     system = System(r0=r0v0.R0[0] / np.sqrt(2), v0=r0v0.V0[0])
     #system.states = np.array([system.r0 / 2, system.r0 / 4])
     #system.states = np.array([system.r0 / 2, system.r0 / 4])
     #system.states = np.power(system.states, -2)
-    print("States: ", system.states)
+    #print("States: ", system.states)
 
-    #print(f"r0: {r0v0.R0[0]}")
-    #S = system.calculate_S()
-    #H = system.calculate_H()
-    #print("S: \n", S)
-    #print("H: \n", H)
 
-    # Finding new states with the lowest energy
-    #print(system.find_new_state())
+    print(f"Errors (if any):")
+    basis = system.construct_basis(num_basis)
 
-    # Constructing the basis
-    print(f"\n \n \nFinal state: {system.construct_basis(30)}")
+    print("=========================")
+    print(f"\nFinal state of {len(basis)} basis: \n")
+    print(basis)
 
 
     print("\n")
