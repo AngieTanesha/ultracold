@@ -69,6 +69,13 @@ def eigenvalues(S, H):
         # eigh returns two things: the list of eigenvalues and the list of
         # corresponding eigenvectors.  We don't really care about the
         # eigenvectors so we just return the eigenvalues.
+        try:
+            sp.linalg.eigh(H, S)[0]
+
+        except (np.linalg.linalg.LinAlgError, ValueError):
+            return False
+
+
         return sp.linalg.eigh(H, S)[0]
 
 
@@ -85,10 +92,18 @@ def lowest_eigenvalue(S, H):
     The lowest eigenvalue and its index of the generalized matrix equation.
     """
     evalues = eigenvalues(S,H)
-    lowest = np.amin(evalues)
-    index = np.where(evalues == lowest)
 
-    return lowest, index
+    if np.any(evalues):
+        lowest = np.amin(evalues)
+
+        #index = np.where(abs(evalues - lowest) <0.01)
+        #print(f"S: {S}")
+        #print(f"evalues: {evalues}")
+        #print(f"lowest {lowest} state {S[index[0][0]][index[0][0]]}")
+        return lowest
+
+    else:
+        return False
 
 def plot_fit(x, y, p, Cp, nsig=1, ax=None):
     """Plot data along with the polynomial fit's confidence interval.
@@ -105,7 +120,7 @@ def plot_fit(x, y, p, Cp, nsig=1, ax=None):
     Cp : array_like, shape (d, d)
       The covariance matrix returned by `polyfit`, where `d` is the degree of
       the polynomial.
-    nsig : float, default 1
+    nsig : flo[0][0]at, default 1
       The number of sigmas to display
     ax : Pyplot Axis, default None
       The axis in which
@@ -372,10 +387,10 @@ class System():
         The random state, or array of random states with the specified size.
         """
         if size == None:
-            return np.power(np.random.uniform(self.r0/100, 100*self.r0,1), -2)
+            return np.power(np.random.uniform(self.r0 / 100,100 * self.r0,1), -2)
 
         else:
-            return np.power(np.random.uniform(self.r0/100, 100*self.r0, size), -2)
+            return np.power(np.random.uniform(self.r0 / 100,100 * self.r0, size), -2)
 
 
     def find_new_state(self, tries=2048):
@@ -388,50 +403,102 @@ class System():
         guarantee that this function finds an improvement; thus you must take
         care of handling both the scenarios in which an improvement is found,
         and in which no improvement is found.
+
         Parameters
         ==========
         tries: int
           The number of states to randomly generate before return the best
           candidate.
+
         Returns
         =======
         You decide (though probably should return the best state).
         """
 
-        new_state = self.gen_random_state(tries)
-        print("New states\n")
-        print(new_state)
+        # First create the S and H matrices from the states that we already have.
+        S_ori = self.calculate_S()
+        H_ori = self.calculate_H()
 
-        S = self.calculate_S(new_state)
-        H = self.calculate_H(new_state)
+        # Calculate the lowest eigenvalue and its index from this S and H.
+        best_e = lowest_eigenvalue(S_ori, H_ori)
+        best_state = None
+        for state in self.gen_random_state(tries):
+            # Create the new S and H matrix by only considering one new state
+            # and the old states at a time.
+            S = self.calculate_S(state)
+            H = self.calculate_H(state)
 
-        print("S  \n", S)
-        print("H  \n", H)
+            #print("S  \n", S)
+            #print("H  \n", H)
 
-        print(lowest_eigenvalue(S,H))
+            # Get the new energy eigenvalue and its index considering the new state
+            e = lowest_eigenvalue(S, H)
 
+            # If there are errors, return False immediately
+            if not e:
+                continue
 
+            #print(evalue, index)
+
+            # Update the minimum eigenvalues and its index a smaller number is found.
+            #print(f"{evalue} - {min_evalue} = abs({evalue-min_evalue})")
+            #print(f"min evalue {min_evalue}")
+            if e < best_e:
+                best_e = e
+                best_state = state
+
+        return best_state
 
     def construct_basis(self, nstates: int, max_failures=16):
-        """The construct the basis with the desired number of states.
+        """This construct the basis with the desired number of states.
         This is the main loop with will try and construct a basis with the
         desired number of states, `nstates`.  Note that this is a stochastic
         process and in particular, you have to handle the possibility that new
         states or improvements can't be found.
         This function should update `self.states` as it goes.
+
         Parameters
         ==========
+
         nstates: int
           The desired number of states
+
         max_failures: int
           The maximum number of failures permitted when trying to find a new
           state.
+
         Returns
         =======
         Up to you to decide what, if anything, this function should return.
         """
 
+        # start with no basis
+        nbasis = 0
+        nfails = 0
 
+        # Generate one random state
+        if self.states.shape[0] == 0:
+
+            self.states = self.gen_random_state()
+
+            nbasis += 1
+            print(f"    nbasis: {nbasis} with states {self.states}")
+
+        while nbasis < nstates and nfails < max_failures:
+
+            new_basis = self.find_new_state()
+
+            if new_basis is None:
+                nfails += 1
+                print(f"        nfails: {nfails}")
+                continue
+
+            nbasis += 1
+            self.states = np.append(self.states, new_basis)
+
+            print(f"    nbasis: {nbasis} with states {self.states}")
+
+        return self.states
 
 if __name__ == "__main__":
     # Make sure that the output/ directory exists, or create it otherwise.
@@ -474,17 +541,23 @@ if __name__ == "__main__":
 
     print("Test system for debugging")
     print("=========================")
-    system = System(r0=1 / np.sqrt(2), v0=1)
-    system.states = np.array([system.r0 / 2, system.r0 / 4])
-    system.states = np.power(system.states, -2)
+    system = System(r0=r0v0.R0[0] / np.sqrt(2), v0=r0v0.V0[0])
+    #system.states = np.array([system.r0 / 2, system.r0 / 4])
+    #system.states = np.array([system.r0 / 2, system.r0 / 4])
+    #system.states = np.power(system.states, -2)
     print("States: ", system.states)
 
+    #print(f"r0: {r0v0.R0[0]}")
     #S = system.calculate_S()
     #H = system.calculate_H()
     #print("S: \n", S)
     #print("H: \n", H)
 
-    # Finding new states
-    print(system.find_new_state())
+    # Finding new states with the lowest energy
+    #print(system.find_new_state())
+
+    # Constructing the basis
+    print(f"\n \n \nFinal state: {system.construct_basis(30)}")
+
 
     print("\n")
