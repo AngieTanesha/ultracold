@@ -93,13 +93,15 @@ def lowest_eigenvalue(S, H):
     evalues = eigenvalues(S,H)
 
     if np.any(evalues):
-        lowest = np.amin(evalues)
 
-        #index = np.where(abs(evalues - lowest) <0.01)
-        #print(f"S: {S}")
-        #print(f"evalues: {evalues}")
-        #print(f"lowest {lowest} state {S[index[0][0]][index[0][0]]}")
-        return lowest
+        # Reject if ground state energies are less than zero.
+        if np.amin(evalues) < 0:
+
+            return False
+
+        else:
+
+            return evalues
 
     else:
         return False
@@ -235,7 +237,7 @@ class System():
         # actual width in `self.states` but store the inverse-square of the
         # widths.
         self.states = np.zeros(0)
-        self.ground_energies = np.zeros(0)
+        self.energies = []
 
         self.S = np.zeros((self.states.shape[0], self.states.shape[0]))
         self.H = np.zeros((self.states.shape[0], self.states.shape[0]))
@@ -289,7 +291,7 @@ class System():
         if np.any(new_state):
 
             # If there are new states, and new_state has to be a 1 x n array
-            # (it is important for new_state to be a Numpy array for the
+            # (it is important for new_state to be a Numpy array for thelowest
             # following code to work).
 
             # Combine the states from the system with the new state
@@ -309,7 +311,6 @@ class System():
             si, sj = np.meshgrid(self.states, self.states)
 
             return self.calculate_S_elem(si, sj)
-
 
 
 
@@ -372,7 +373,7 @@ class System():
 
             return self.calculate_H_elem(si, sj)
 
-    def gen_random_state(self, size=None) -> float:
+    def gen_random_state(self, size=1) -> float:
         """Generate a random state with width between [r0 / 100, 100 * r0).
         The state is *not* added to the internal list of states.
         A list of random states can be created at once by specifying a `size`.
@@ -387,11 +388,7 @@ class System():
         =======
         The random state, or array of random states with the specified size.
         """
-        if size == None:
-            return np.power(np.random.uniform(self.r0 / 100,100 * self.r0,1), -2)
-
-        else:
-            return np.power(np.random.uniform(self.r0 / 100,100 * self.r0, size), -2)
+        return np.power(np.random.uniform(self.r0 / 100, 100 * self.r0, size), -2)
 
 
     def find_new_state(self, tries=2048):
@@ -420,7 +417,7 @@ class System():
         S_ori = self.calculate_S()
         H_ori = self.calculate_H()
 
-        # Calculate the lowest eigenvalue and its index from this S and H.
+        # Calculate the lowest eigenvalue
         best_e = lowest_eigenvalue(S_ori, H_ori)
 
         best_state = None
@@ -438,7 +435,7 @@ class System():
             e = lowest_eigenvalue(S, H)
 
             # If there are errors, return False immediately
-            if not e:
+            if not np.any(e):
                 continue
 
             #print(evalue, index)
@@ -446,7 +443,10 @@ class System():
             # Update the minimum eigenvalues and its index a smaller number is found.
             #print(f"{evalue} - {min_evalue} = abs({evalue-min_evalue})")
             #print(f"min evalue {min_evalue}")
-            if e < best_e:
+
+
+            # Only compare GROUND STATE energies!
+            if e[0] < best_e[0]:
                 best_e = e
                 best_state = state
 
@@ -479,13 +479,15 @@ class System():
         nbasis = 0
         nfails = 0
 
+        energy = 2
+
         # Generate one random state
         if self.states.shape[0] == 0:
 
             self.states = self.gen_random_state()
             S = self.calculate_S()
             H = self.calculate_H()
-            self.ground_energies = lowest_eigenvalue(S,H)
+            self.energies = lowest_eigenvalue(S,H)
 
             nbasis += 1
             #print(f"    nbasis: {nbasis} with states {self.states}")
@@ -497,17 +499,22 @@ class System():
             if new_basis is None:
                 nfails += 1
 
+                if nfails == 15:
+                    print(f"        {nfails} failures for basis {nbasis}, {self.states[nbasis-1]}")
+
                 continue
 
             nbasis += 1
             self.states = np.append(self.states, new_basis)
-            self.ground_energies = np.append(self.ground_energies, new_e)
+            self.energies = np.append(self.energies, new_e[energy])
+            
+
+
 
             if nfails:
                 print(f"        {nfails} failures for basis {nbasis}, {self.states[nbasis-1]}")
-            #print(f"    nbasis: {nbasis} with states {self.states}")
 
-        return self.states, self.ground_energies
+        return self.states, self.energies
 
 if __name__ == "__main__":
     # If you are going to do a polynomial fit, have a loop at the documentation
@@ -523,72 +530,107 @@ if __name__ == "__main__":
     if not output_dir.is_dir():
         output_dir.mkdir()
 
-    # __________________________________________________________________________
-    # Testing the gaussian integral is a gamma function
-
-    # Plotting Q3
-    k = 5
-    x = np.linspace(-10,10,50000) # These are n
-    y = np.array([gaussian_integral(k, x_i) for x_i in x])
-    y = np.ma.masked_where(abs(y)>2000, y)
-
-    fig, ax = pyplot.subplots()
-    ax.plot(x, y)
-    ax.set_title("Plot of integral of a gaussian of k = 5, varying n.")
-    ax.set_xlabel("$n$")
-    ax.set_ylabel("$integral$")
-    ax.grid(linestyle = "-.", linewidth = 0.01)
-
-    ax.set_xlim(-10,0)
-    ax.set_ylim(-1000,1000)
-    #pyplot.show()
-
-    fig.savefig("output/numerical_gaussian_test.pdf")
-
-    # __________________________________________________________________________
+    # # __________________________________________________________________________
+    # # Testing the gaussian integral is a gamma function
+    #
+    # # Plotting Q3
+    # k = 5
+    # x = np.linspace(-10,10,50000) # These are n
+    # y = np.array([gaussian_integral(k, x_i) for x_i in x])
+    # y = np.ma.masked_where(abs(y)>2000, y)
+    #
+    # fig, ax = pyplot.subplots()
+    # ax.plot(x, y)
+    # ax.set_title("Plot of integral of a gaussian of k = 5, varying n.")
+    # ax.set_xlabel("$n$")
+    # ax.set_ylabel("$integral$")
+    # ax.grid(linestyle = "-.", linewidth = 0.01)
+    #
+    # ax.set_xlim(-10,0)
+    # ax.set_ylim(-1000,1000)
+    # #pyplot.show()
+    #
+    # fig.savefig("output/numerical_gaussian_test.pdf")
+    #
+    # # __________________________________________________________________________
     # Constructing the basis and getting their ground state energies
 
     # Initialise the system, ie. their r0 and v0 values
-    system = System(r0=r0v0.R0[0] / np.sqrt(2), v0=r0v0.V0[0])
+    system = System(r0=r0v0.R0[0], v0=r0v0.V0[0])
 
     # Set the desired number of basis as num_basis
-    num_basis = 30
-    print(f"Creating {num_basis} basis")
+    num_basis = int(input("Enter the desired number of basis: "))
+    filename = input("Enter filename: ")
+
+    print(f"\nCreating {num_basis} basis")
     print("=========================")
 
     # print the number of errors and the basis this algorithm gets when calculating the eigenvalues.
-    print(f"Errors (if any):")
+    print(f"Errors (if any): \n")
 
-    # Get the basis and their ground state energies.
-    basis, ground = system.construct_basis(num_basis)
+    # # Get the basis and their ground state energies.
+    # basis, ground = system.construct_basis(num_basis)
+    #
+    # # Print the basis and their energies.
+    # print("=========================")
+    # print(f"Final state of {len(basis)} basis: \n")
+    # print(basis)
+    #
+    # print(f"\nwith ground energies\n")
+    # print(ground)
 
-    # Print the basis and their energies.
-    print("=========================")
-    print(f"Final state of {len(basis)} basis: \n")
-    print(basis)
-
-    print(f"\nwith ground energies\n")
-    print(ground)
+    # # __________________________________________________________________________
+    # # Plotting one set of ground state energy and the basis size
+    #
+    # x = np.arange(len(basis))
+    # y = ground
+    #
+    # fig, ax = pyplot.subplots()
+    # ax.plot(x, y)
+    # ax.set_title("Plot of ground state energies vs. size of basis")
+    # ax.set_xlabel("size of basis")
+    # ax.set_ylabel("$E_0$")
+    # ax.grid(linestyle = "-.", linewidth = 0.01)
+    #
+    # #ax.set_xlim(-10,0)
+    # #ax.set_ylim(-1000,1000)
+    # #pyplot.show()
+    #
+    # print("\n=========================")
+    # filename = input("Enter filename: ")
+    #
+    # fig.savefig("output/Q7_groundstate_" + str(len(basis)) + "_" + str(filename) +".pdf")
 
     # __________________________________________________________________________
-    # Plotting one set of ground state energy and the basis size
+    # Plotting multiple ground state energies and basis size
 
-    # Plotting Q7
-
-    x = np.arange(len(basis))
-    y = ground
+    # Get the basis and their ground state energies.
 
     fig, ax = pyplot.subplots()
-    ax.plot(x, y)
-    ax.set_title("Plot of ground state energies vs. size of basis")
+    avg_evalues = []
+    for i in range(5):
+        print(f"  for plot {i} =========================\n")
+        basis, evalues = system.construct_basis(num_basis)
+
+        # Convert lists to numpy
+        evalues = np.array(evalues)
+
+        if i == 0:
+            avg_evalues = np.zeros(len(evalues))
+        avg_evalues = (avg_evalues + evalues)/2
+
+        ax.plot(evalues, linewidth=0.05)
+
+        # Wipe all states and energies for the next construct basis call
+        system.states = np.zeros(0)
+        system.energies = np.zeros(0)
+
+
+    ax.plot(avg_evalues,color="black", label="Average")
+    ax.legend()
+    ax.set_title("Plot of " +  filename + " state energies vs. size of basis")
     ax.set_xlabel("size of basis")
     ax.set_ylabel("$E_0$")
     ax.grid(linestyle = "-.", linewidth = 0.01)
 
-    #ax.set_xlim(-10,0)
-    #ax.set_ylim(-1000,1000)
-    #pyplot.show()
-
-    fig.savefig("output/Q7_groundstate_" + str(len(basis)) + ".pdf")
-
-    print("\n")
+    fig.savefig("output/Q7_energy_average_" + str(num_basis) + "_" + str(filename) +".pdf")
