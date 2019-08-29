@@ -14,11 +14,12 @@ import pathlib
 import matplotlib.pyplot as pyplot
 import numpy as np
 from scipy.special import gamma
+import numpy.ma as ma
 
 
 
 
-def energy(e: float, a_s: float) -> float:
+def energy(e: float) -> float:
     """The function that determines the energy eigenvalues.
 
     Parameters
@@ -40,7 +41,7 @@ def energy(e: float, a_s: float) -> float:
       Value of the scattering length - energy function evaluated for the given energy.
 
     """
-    return gamma(-e/2 + 3/4) - gamma(-e/2 + 1/4) / (a_s * np.sqrt(2))
+    return  gamma(-e/2 + 1/4) / (gamma(-e/2 + 3/4) * np.sqrt(2))
 
 
 if __name__ == "__main__":
@@ -49,57 +50,34 @@ if __name__ == "__main__":
     if not output_dir.is_dir():
         output_dir.mkdir()
 
-    # Example Plotting
-    ########################################
-    # Here is a simple example of a plotting routine.
-
-    # First, we create an array of x values, and compute the corresponding y
-    # values.
-    x = np.linspace(-4 * np.pi, 4 * np.pi, 1000)
-    y = np.sin(x) / x
-    # We create the new figure with 1 subplot (the default), and store the
-    # Figure and Axis object in `fig` and `ax` (allowing for their properties
-    # to be changed).
-    fig, ax = pyplot.subplots()
-    ax.plot(x, y)
-    ax.set_title("Plot of sin(x) / x")
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    # Matplotlib by default does a good job of figuring out the limits of the
-    # axes; however, it can fail sometimes.  This allows you to set them
-    # manually.
-    ax.set_ylim([-0.5, 1.1])
-    fig.savefig("output/example.pdf")
 
     # Q3 _______________________________________________________________________
     # We want to find solutions to the scattering length (a_s) and energy relation
     # given in section 3. We will first hold the a_s constant, positive, "large".
-    step = 100
-    input_energy = np.linspace(0,20,step)
-    print(input_energy)
+    step = 10000
+    input_energy = np.linspace(-10,20,step)
 
-    a_s = 10000
-
-    output_error = np.array([energy(x, a_s) for x in input_energy])
-    print(output_error)
+    a_s = np.array([energy(x) for x in input_energy])
 
     # Plotting Q3
-    x = input_energy
-    y = output_error
+    x = a_s
+    y = input_energy
+    x = ma.masked_where(abs(x)>50, x)
     # We create the new figure with 1 subplot (the default), and store the
     # Figure and Axis object in `fig` and `ax` (allowing for their properties
     # to be changed).
     fig, ax = pyplot.subplots()
     ax.plot(x, y)
-    ax.set_title("Plot of error function vs. input energies")
-    ax.set_xlabel("input_energy")
-    ax.set_ylabel("output_error")
-    ax.grid(linestyle = "-.", linewidth = 0.01)
+    ax.set_title("Plot of input energy ($E_{input}$) vs. scattering length ($a_s$)")
+    ax.set_xlabel("$a_s$")
+    ax.set_ylabel("$E_{input}$")
+    ax.set_yticks(np.arange(0.5, 17, 2))
+    ax.yaxis.grid(ls = "dashed", lw = 0.7)
+    ax.xaxis.grid(lw = 0.1)
     # Matplotlib by default does a good job of figuring out the limits of the
     # axes; however, it can fail sometimes.  This allows you to set them
     # manually.
 
-    y_min = output_error.min()/(step) # Because energy is always positive
-    y_max = output_error.max()/(step)
-    ax.set_ylim([y_min, y_max])
-    fig.savefig("output/Q3_plot_pretty.pdf")
+    ax.set_ylim(-5,15)
+    ax.set_xlim(-5,5)
+    fig.savefig("output/Q3_plot_pretty3_use this.pdf")

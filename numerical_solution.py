@@ -101,6 +101,7 @@ def lowest_eigenvalue(S, H):
 
         else:
 
+            # Returning all eigenvalues, but this increases by one each time.
             return evalues
 
     else:
@@ -178,6 +179,32 @@ def polyfit_error(x, p, Cp):
     y_cov = np.dot(TT, np.dot(Cp, TT.T))
     y_sig = np.sqrt(np.diag(y_cov))
     return fit_y, y_sig
+
+def plot_gamma_functions(max_k: int):
+    # __________________________________________________________________________
+    # Testing the gaussian integral is a gamma function
+
+    fig, ax = pyplot.subplots()
+
+    # Plotting Q3
+    for k in range(0,2*max_k,2):
+        x = np.linspace(-20,10,50000) # These are n
+        y = np.array([gaussian_integral(k, x_i) for x_i in x])
+        y = np.ma.masked_where(abs(y)>2000, y)
+        ax.plot(x,y, label=f"k = {k}")
+
+    ax.set_title("Plot of integral of a gaussian of k and n")
+    ax.set_xlabel("$n$")
+    ax.set_ylabel("$integral$")
+    ax.grid(linestyle = "-.", linewidth = 0.01)
+    ax.legend()
+    ax.set_xlim(-10,0)
+    ax.set_ylim(-500,500)
+    #pyplot.show()
+
+    fig.savefig("output/numerical_gaussian_test_zoomed.pdf")
+
+    return None
 
 
 class System():
@@ -479,8 +506,6 @@ class System():
         nbasis = 0
         nfails = 0
 
-        energy = 2
-
         # Generate one random state
         if self.states.shape[0] == 0:
 
@@ -494,6 +519,7 @@ class System():
 
         while nbasis < nstates and nfails < max_failures:
 
+            # new_e will be a different list each time.
             new_basis, new_e = self.find_new_state()
 
             if new_basis is None:
@@ -506,15 +532,14 @@ class System():
 
             nbasis += 1
             self.states = np.append(self.states, new_basis)
-            self.energies = np.append(self.energies, new_e[energy])
-            
-
-
+            self.energies = new_e
 
             if nfails:
                 print(f"        {nfails} failures for basis {nbasis}, {self.states[nbasis-1]}")
 
         return self.states, self.energies
+
+
 
 if __name__ == "__main__":
     # If you are going to do a polynomial fit, have a loop at the documentation
@@ -530,29 +555,11 @@ if __name__ == "__main__":
     if not output_dir.is_dir():
         output_dir.mkdir()
 
-    # # __________________________________________________________________________
-    # # Testing the gaussian integral is a gamma function
-    #
-    # # Plotting Q3
-    # k = 5
-    # x = np.linspace(-10,10,50000) # These are n
-    # y = np.array([gaussian_integral(k, x_i) for x_i in x])
-    # y = np.ma.masked_where(abs(y)>2000, y)
-    #
-    # fig, ax = pyplot.subplots()
-    # ax.plot(x, y)
-    # ax.set_title("Plot of integral of a gaussian of k = 5, varying n.")
-    # ax.set_xlabel("$n$")
-    # ax.set_ylabel("$integral$")
-    # ax.grid(linestyle = "-.", linewidth = 0.01)
-    #
-    # ax.set_xlim(-10,0)
-    # ax.set_ylim(-1000,1000)
-    # #pyplot.show()
-    #
-    # fig.savefig("output/numerical_gaussian_test.pdf")
-    #
-    # # __________________________________________________________________________
+    # See what the gamma function look like as k and n varies
+    # plot_gamma_functions(5)
+
+    # __________________________________________________________________________
+
     # Constructing the basis and getting their ground state energies
 
     # Initialise the system, ie. their r0 and v0 values
@@ -560,6 +567,7 @@ if __name__ == "__main__":
 
     # Set the desired number of basis as num_basis
     num_basis = int(input("Enter the desired number of basis: "))
+    #energy = int(input("Which excited state? "))
     filename = input("Enter filename: ")
 
     print(f"\nCreating {num_basis} basis")
@@ -568,7 +576,11 @@ if __name__ == "__main__":
     # print the number of errors and the basis this algorithm gets when calculating the eigenvalues.
     print(f"Errors (if any): \n")
 
-    # # Get the basis and their ground state energies.
+    # __________________________________________________________________________
+    # # ONE SET OF GROUND ENERGIES
+
+    #
+    # Get the basis and their ground state energies.
     # basis, ground = system.construct_basis(num_basis)
     #
     # # Print the basis and their energies.
@@ -578,9 +590,8 @@ if __name__ == "__main__":
     #
     # print(f"\nwith ground energies\n")
     # print(ground)
-
-    # # __________________________________________________________________________
-    # # Plotting one set of ground state energy and the basis size
+    #
+    # Plotting one set of ground state energy and the basis size
     #
     # x = np.arange(len(basis))
     # y = ground
@@ -602,13 +613,19 @@ if __name__ == "__main__":
     # fig.savefig("output/Q7_groundstate_" + str(len(basis)) + "_" + str(filename) +".pdf")
 
     # __________________________________________________________________________
+    # MULTIPLE GROUND ENERGIES
     # Plotting multiple ground state energies and basis size
-
+    #
     # Get the basis and their ground state energies.
 
     fig, ax = pyplot.subplots()
+    ax.set_yscale("log")
+
     avg_evalues = []
-    for i in range(5):
+    all_evalues = []
+
+    # Get all eigenvalues
+    for i in range(10):
         print(f"  for plot {i} =========================\n")
         basis, evalues = system.construct_basis(num_basis)
 
@@ -617,20 +634,29 @@ if __name__ == "__main__":
 
         if i == 0:
             avg_evalues = np.zeros(len(evalues))
+            all_evalues = evalues
+            ax.plot(all_evalues, lw=0.5)
+            system.states = np.zeros(0)
+            system.energies = np.zeros(0)
+            continue
+
+        all_evalues = np.vstack((all_evalues, evalues))
+
         avg_evalues = (avg_evalues + evalues)/2
 
-        ax.plot(evalues, linewidth=0.05)
+        ax.plot(all_evalues[i], lw=0.05)
 
         # Wipe all states and energies for the next construct basis call
         system.states = np.zeros(0)
         system.energies = np.zeros(0)
 
 
-    ax.plot(avg_evalues,color="black", label="Average")
+    ax.plot(avg_evalues,color="black", label="Average", lw = 0.8)
+
     ax.legend()
-    ax.set_title("Plot of " +  filename + " state energies vs. size of basis")
-    ax.set_xlabel("size of basis")
-    ax.set_ylabel("$E_0$")
+    ax.set_title("Plot of " +  filename + " state energies")
+    ax.set_xlabel("Excited state n")
+    ax.set_ylabel("$E_n$")
     ax.grid(linestyle = "-.", linewidth = 0.01)
 
-    fig.savefig("output/Q7_energy_average_" + str(num_basis) + "_" + str(filename) +".pdf")
+    fig.savefig("output/Q7_energy_average_log_" + str(num_basis) + "_" + str(filename) +".pdf")
