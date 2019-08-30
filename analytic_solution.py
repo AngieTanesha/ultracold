@@ -54,8 +54,8 @@ if __name__ == "__main__":
     # Q3 _______________________________________________________________________
     # We want to find solutions to the scattering length (a_s) and energy relation
     # given in section 3. We will first hold the a_s constant, positive, "large".
-    step = 10000
-    input_energy = np.linspace(-10,20,step)
+    step = 100000
+    input_energy = np.linspace(-10,50,step)
 
     a_s = np.array([energy(x) for x in input_energy])
 
@@ -67,17 +67,18 @@ if __name__ == "__main__":
     # Figure and Axis object in `fig` and `ax` (allowing for their properties
     # to be changed).
     fig, ax = pyplot.subplots()
+    ax.set_ylim(-5,50)
+    ax.set_xlim(-5,5)
     ax.plot(x, y)
     ax.set_title("Plot of input energy ($E_{input}$) vs. scattering length ($a_s$)")
     ax.set_xlabel("$a_s$")
     ax.set_ylabel("$E_{input}$")
-    ax.set_yticks(np.arange(0.5, 17, 2))
+    ax.set_yticks(np.arange(0.5, 51, 2))
     ax.yaxis.grid(ls = "dashed", lw = 0.7)
     ax.xaxis.grid(lw = 0.1)
     # Matplotlib by default does a good job of figuring out the limits of the
     # axes; however, it can fail sometimes.  This allows you to set them
     # manually.
 
-    ax.set_ylim(-5,15)
-    ax.set_xlim(-5,5)
+
     fig.savefig("output/Q3_plot_pretty3_use this.pdf")

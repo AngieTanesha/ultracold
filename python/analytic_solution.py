@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 """Analytic Solution
 ====================
-
 First, we want to have an idea as to what the analytic solution tells us.  The
 problem is that the analytic equation that determines the energy eigenvalues
 cannot be solved analytically; thus, numerical methods must be used to find the
 energy eigenvalues of the system.
-
 """
 
 import pathlib
@@ -20,25 +18,16 @@ from scipy.special import gamma
 
 def energy(e: float, a_s: float) -> float:
     """The function that determines the energy eigenvalues.
-
     Parameters
     ==========
-
     e: float
-
       The input energy (in arbitrary units)
-
     a_s: float
-
       The chosen scattering length (in arbritrary units)
-
     Returns
     =======
-
     v: float
-
       Value of the scattering length - energy function evaluated for the given energy.
-
     """
     return gamma(-e/2 + 3/4) - gamma(-e/2 + 1/4) / (a_s * np.sqrt(2))
 

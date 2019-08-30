@@ -188,9 +188,9 @@ def plot_gamma_functions(max_k: int):
 
     # Plotting Q3
     for k in range(0,2*max_k,2):
-        x = np.linspace(-20,10,50000) # These are n
+        x = np.linspace(0,100,500) # These are n
         y = np.array([gaussian_integral(k, x_i) for x_i in x])
-        y = np.ma.masked_where(abs(y)>2000, y)
+        #y = ma.masked_where(abs(y)>2000, y)
         ax.plot(x,y, label=f"k = {k}")
 
     ax.set_title("Plot of integral of a gaussian of k and n")
@@ -198,8 +198,8 @@ def plot_gamma_functions(max_k: int):
     ax.set_ylabel("$integral$")
     ax.grid(linestyle = "-.", linewidth = 0.01)
     ax.legend()
-    ax.set_xlim(-10,0)
-    ax.set_ylim(-500,500)
+    ax.set_xlim(0,100)
+    ax.set_ylim(0,2000)
     #pyplot.show()
 
     fig.savefig("output/numerical_gaussian_test_zoomed.pdf")
@@ -556,7 +556,7 @@ if __name__ == "__main__":
         output_dir.mkdir()
 
     # See what the gamma function look like as k and n varies
-    # plot_gamma_functions(5)
+    plot_gamma_functions(5)
 
     # __________________________________________________________________________
 
